@@ -1,0 +1,52 @@
+name: multus
+summary: Rock for the Multus thin CNI.
+description: >
+  This rock is a drop in replacement for the
+  ghcr.io/k8snetworkplumbingwg/multus-cni thin image.
+version: v4.0.2
+license: Apache-2.0
+
+base: ubuntu@22.04
+build-base: ubuntu@22.04
+platforms:
+  amd64:
+  arm64:
+
+services:
+  multus:
+    command: /thin_entrypoint
+    override: replace
+    startup: enabled
+
+parts:
+  build-deps:
+    plugin: nil
+    build-snaps:
+      - go/1.21/stable
+
+  multus:
+    after: [build-deps]
+    plugin: go
+    source-type: git
+    source: https://github.com/k8snetworkplumbingwg/multus-cni
+    source-tag: v4.0.2
+    source-depth: 1
+    override-build: |
+      ./hack/build-go.sh
+
+      cp $CRAFT_PART_BUILD/bin/install_multus $CRAFT_PART_INSTALL/
+      cp $CRAFT_PART_BUILD/bin/thin_entrypoint $CRAFT_PART_INSTALL
+      cp $CRAFT_PART_BUILD/LICENSE $CRAFT_PART_INSTALL
+
+      # NOTE: The upstream Dockerfile handpicks a few executables and adds them
+      # to the root dir, but also copies the entire bin folder to /usr/src/multus-cni.
+      # https://github.com/k8snetworkplumbingwg/multus-cni/blob/f03765681fe81ee1e0633ee1734bf48ab3bccf2b/images/Dockerfile#L13-L18
+      #
+      # This seems redundant, we end up with multiple copies of the same files.
+      # Furthermore, multus-shim, multus-daemon (and possibly the multus binary)
+      # should only be included in the "-thick" image flavor.
+      #
+      # We need this image to be a drop in replacement, so we'll preserve these files.
+      mkdir -p $CRAFT_PART_INSTALL/usr/src/multus-cni
+      cp -r $CRAFT_PART_BUILD/bin $CRAFT_PART_INSTALL/usr/src/multus-cni
+      cp $CRAFT_PART_BUILD/LICENSE $CRAFT_PART_INSTALL/usr/src/multus-cni
