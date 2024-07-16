@@ -3,7 +3,8 @@
 #
 import os
 
-from test_util import harness, util
+from k8s_test_harness import harness
+from k8s_test_harness.util import exec_util
 
 
 def test_multus_deployment(module_instance: harness.Instance):
@@ -30,7 +31,7 @@ def test_multus_deployment(module_instance: harness.Instance):
 
     module_instance.exec(helm_command)
 
-    util.stubbornly(retries=3, delay_s=1).on(module_instance).exec(
+    exec_util.stubbornly(retries=3, delay_s=1).on(module_instance).exec(
         [
             "sudo", "k8s",
             "kubectl", "rollout", "status",
