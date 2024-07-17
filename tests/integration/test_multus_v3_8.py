@@ -10,6 +10,10 @@ from k8s_test_harness.util import exec_util
 
 
 def test_multus_deployment(tmp_path: pathlib.Path, module_instance: harness.Instance):
+    image_uri = os.getenv("ROCK_MULTUS_V3_8")
+    assert image_uri is not None, "ROCK_MULTUS_V3_8 is not set"
+    image_split = image_uri.split(":")
+
     clone_path = tmp_path / "multus"
     clone_path.mkdir()
 
@@ -34,13 +38,6 @@ def test_multus_deployment(tmp_path: pathlib.Path, module_instance: harness.Inst
         str(chart_path.absolute()),
         "--namespace",
         "kube-system",
-    ]
-
-    image_uri = os.getenv("ROCK_MULTUS_V3_8")
-    assert image_uri is not None, "ROCK_MULTUS_V3_8 is not set"
-    image_split = image_uri.split(":")
-
-    helm_command += [
         "--set",
         f"image.repository={image_split[0]}",
         "--set",
