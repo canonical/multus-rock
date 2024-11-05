@@ -6,7 +6,7 @@ description: >
 version: v4.0.2
 license: Apache-2.0
 
-base: ubuntu@22.04
+base: bare
 build-base: ubuntu@22.04
 platforms:
   amd64:
@@ -31,6 +31,10 @@ parts:
     source: https://github.com/k8snetworkplumbingwg/multus-cni
     source-tag: v4.0.2
     source-depth: 1
+    stage-packages:
+      - coreutils
+      # Needed for pgrep, which is used as a liveness / readiness probe.
+      - procps
     override-build: |
       ./hack/build-go.sh
 

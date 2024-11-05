@@ -36,3 +36,20 @@ def test_multus_deployment(module_instance: harness.Instance):
     k8s_util.wait_for_daemonset(
         module_instance, INSTALL_NAME, constants.K8S_NS_KUBE_SYSTEM
     )
+
+    # Sanity check: make sure there isn't an error in Pebble that it couldn't start the service.
+    process = module_instance.exec(
+        [
+            "k8s",
+            "kubectl",
+            "logs",
+            "-n",
+            constants.K8S_NS_KUBE_SYSTEM,
+            f"daemonset.apps/{INSTALL_NAME}",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert '(Start service "multus") failed' not in process.stdout

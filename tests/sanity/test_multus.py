@@ -55,4 +55,4 @@ def test_multus_4_0_2():
     assert V4_0_2_EXPECTED_HELPSTR in docker_run.stderr
 
     # check rock filesystem
-    docker_util.ensure_image_contains_paths(rock.image, V4_0_2_EXPECTED_FILES)
+    docker_util.ensure_image_contains_paths_bare(rock.image, V4_0_2_EXPECTED_FILES)
